@@ -9,7 +9,7 @@ struct IMU_t {
 };
 
 int imu_create();
-void imu_readSensor();
+void imu_read_sensor();
 IMU_t imu_get_data();
 float imu_get_roll();
 float imu_get_pitch();
