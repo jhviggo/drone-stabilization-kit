@@ -49,10 +49,10 @@ int request_send(String jsonData) {
       }
     }
 
-    while(client.available()) {
+    if (client.available()) {
       String line = client.readStringUntil('\r');
-      Serial.print(line);
+      Serial.println(line);
+      client.flush();
     }
-    Serial.println("Completed POST request!");
     return 0;
 }
