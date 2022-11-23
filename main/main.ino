@@ -1,11 +1,15 @@
 #include "request.h"
 #include "imu.h"
+#include "configuration.h"
 
 #define REQUEST_FEQUENCY 100UL // 100ms
 #define POSITION_MEASSURE_FEQUENCY 10UL // 10ms
+#define ROUTER_SSID "viggolicious"
+#define ROUTER_PASWD "84219114"
+#define SESSION_PREFIX "test-run-"
 
-int requestCount = 0;
-String sessionId;
+/* unused Arduino loop function */
+void loop() {}
 
 /**
  * setup function first called by hardware to set up any important drivers
@@ -13,29 +17,34 @@ String sessionId;
 void setup() {
   Serial.begin(115200);
 
+  /* create IMU instance */
   int imuStatus = imu_create();
   if (imuStatus < 0) {
     Serial.println("IMU initialization unsuccessful");
     while(1) {}
   }
-  String inputRequestCount;
   
+  /* Get session length */
   Serial.print("Session length: ");
   delay(50);
   while (!Serial.available()) {} // await serial connection
-  inputRequestCount = Serial.readString();
+  String inputRequestCount = Serial.readString();
   Serial.println(inputRequestCount);
-  requestCount = inputRequestCount.toInt();
+  conf_set_session_count(inputRequestCount.toInt());
 
+  /* get session ID */
   delay(50);
   Serial.print("Session ID: ");
   while (!Serial.available()) {} // await serial connection
-  sessionId = Serial.readString();
+  String sessionId = Serial.readString();
   sessionId.remove(sessionId.length() - 1); // remove newline char
   Serial.println(sessionId);
-  
-  request_connect("viggolicious", "84219114");
+  conf_set_session_id(SESSION_PREFIX + sessionId);
 
+  /* connect to network */
+  request_connect(ROUTER_SSID, ROUTER_PASWD);
+
+  /* create tasks */
   xTaskCreate(
     taskSendData,     /* Task function. */
     "WiFi task",      /* String with name of task. */
@@ -68,22 +77,20 @@ String generateJSON(String session, String device, IMU_t imuSensor) {
 }
 
 /**
- * main program loop which will run constantly
- */
-void loop(){}
-
-/**
  * WiFi task to send data every REQUEST_REQUENCY ms
  */
 void taskSendData(void* parameter) {
   const TickType_t xFrequency = pdMS_TO_TICKS(REQUEST_FEQUENCY);
   TickType_t xLastWakeTime = xTaskGetTickCount();
   IMU_t imuSensor;
+  int requestCount = conf_get_session_count();
+  String sessionId = conf_get_session_id();
+  String deviceName = conf_get_device_name();
 
   while(requestCount--) {
     xTaskDelayUntil(&xLastWakeTime, xFrequency);
     imuSensor = imu_get_data();
-    String jsonData = generateJSON("test-run-" + sessionId, "ESP-boi", imuSensor);
+    String jsonData = generateJSON(sessionId, deviceName, imuSensor);
     Serial.println(jsonData);
     request_send(jsonData);
   }
