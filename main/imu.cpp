@@ -7,7 +7,7 @@ int imu_create() {
   return IMU.begin();
 }
 
-void imu_readSensor() {
+void imu_read_sensor() {
   IMU.readSensor();
   imuData.accel_x = IMU.getAccelX_mss();
   imuData.accel_y = IMU.getAccelY_mss();

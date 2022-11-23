@@ -46,7 +46,7 @@ void setup() {
 
   /* create tasks */
   xTaskCreate(
-    taskSendData,     /* Task function. */
+    task_send_data,   /* Task function. */
     "WiFi task",      /* String with name of task. */
     10000,            /* Stack size in bytes. */
     NULL,             /* Parameter passed as input of the task */
@@ -54,7 +54,7 @@ void setup() {
     NULL);            /* Task handle. */
 
   xTaskCreate(
-    taskMeassurePosition,
+    task_meassure_position,
     "IMU task",
     10000,
     NULL,
@@ -68,7 +68,7 @@ void setup() {
  * @param IMU sensor struct containing data
  * @return JSON string containing data
  */
-String generateJSON(String session, String device, IMU_t imuSensor) {
+String generate_json(String session, String device, IMU_t imuSensor) {
   String x = String(imuSensor.accel_x, 2);
   String y = String(imuSensor.accel_y, 2);
   String z = String(imuSensor.accel_z, 2);
@@ -79,7 +79,7 @@ String generateJSON(String session, String device, IMU_t imuSensor) {
 /**
  * WiFi task to send data every REQUEST_REQUENCY ms
  */
-void taskSendData(void* parameter) {
+void task_send_data(void* parameter) {
   const TickType_t xFrequency = pdMS_TO_TICKS(REQUEST_FEQUENCY);
   TickType_t xLastWakeTime = xTaskGetTickCount();
   IMU_t imuSensor;
@@ -90,7 +90,7 @@ void taskSendData(void* parameter) {
   while(requestCount--) {
     xTaskDelayUntil(&xLastWakeTime, xFrequency);
     imuSensor = imu_get_data();
-    String jsonData = generateJSON(sessionId, deviceName, imuSensor);
+    String jsonData = generate_json(sessionId, deviceName, imuSensor);
     Serial.println(jsonData);
     request_send(jsonData);
   }
@@ -100,12 +100,12 @@ void taskSendData(void* parameter) {
 /**
  * IMU task to meassure acceleration position every POSITION_MEASSURE_FEQUENCY ms
  */
-void taskMeassurePosition(void* parameter) {
+void task_meassure_position(void* parameter) {
   const TickType_t xFrequency = pdMS_TO_TICKS(POSITION_MEASSURE_FEQUENCY);
   TickType_t xLastWakeTime = xTaskGetTickCount();
 
   while (true) {
-    imu_readSensor();
+    imu_read_sensor();
     xTaskDelayUntil(&xLastWakeTime, xFrequency);
   }
   vTaskDelete( NULL ); // should not be reached
