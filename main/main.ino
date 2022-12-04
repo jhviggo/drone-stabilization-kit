@@ -48,7 +48,7 @@ void setup() {
   xTaskCreate(
     task_send_data,   /* Task function. */
     "WiFi task",      /* String with name of task. */
-    10000,            /* Stack size in bytes. */
+    20000,            /* Stack size in bytes. */
     NULL,             /* Parameter passed as input of the task */
     5,                /* Priority of the task. */
     NULL);            /* Task handle. */
@@ -80,18 +80,17 @@ String generate_json(String session, String device, IMU_t imuSensor) {
  * WiFi task to send data every REQUEST_REQUENCY ms
  */
 void task_send_data(void* parameter) {
-  const TickType_t xFrequency = pdMS_TO_TICKS(REQUEST_FEQUENCY);
-  TickType_t xLastWakeTime = xTaskGetTickCount();
+  const TickType_t xDelay = REQUEST_FEQUENCY / portTICK_PERIOD_MS;
   IMU_t imuSensor;
   int requestCount = conf_get_session_count();
   String sessionId = conf_get_session_id();
   String deviceName = conf_get_device_name();
 
   while(requestCount--) {
-    xTaskDelayUntil(&xLastWakeTime, xFrequency);
+    vTaskDelay( xDelay );
     imuSensor = imu_get_data();
     String jsonData = generate_json(sessionId, deviceName, imuSensor);
-    Serial.println(jsonData);
+    //Serial.println(jsonData);
     request_send(jsonData);
   }
   vTaskDelete( NULL );
