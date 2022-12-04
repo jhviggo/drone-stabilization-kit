@@ -42,7 +42,7 @@ int request_send(String jsonData) {
 
   unsigned long timeout = millis();
     while (client.available() == 0) {
-      if (millis() - timeout > 5000) {
+      if (millis() - timeout > 1000) {
         Serial.println(">>> Client Timeout !");
         client.stop();
         return 1;
