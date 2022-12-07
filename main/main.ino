@@ -73,7 +73,7 @@ String generate_json(String session, String device, IMU_t imuSensor) {
   String y = String(imuSensor.accel_y, 2);
   String z = String(imuSensor.accel_z, 2);
   String temp = String(imuSensor.temperature, 2);
-  return "{\"sessionId\":\"" + session + "\",\"deviceId\":\"" + device + "\",\"temperature\":" + temp + ",\"location\":{\"lat\":1234,\"long\":1234},\"rotation\":{\"x\":" + x + ",\"y\":" + y + ",\"z\":" + z + "}}";
+  return "{\"sessionId\":\"" + session + "\",\"deviceId\":\"" + device + "\",\"temperature\":" + temp + ",\"location\":{\"lat\":56.1206,\"long\":10.1464},\"rotation\":{\"x\":" + x + ",\"y\":" + y + ",\"z\":" + z + "}}";
 }
 
 /**
